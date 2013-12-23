@@ -1,0 +1,79 @@
+/*-------------------------------------------------------------------------------------------------
+Custom CSS
+-------------------------------------------------------------------------------------------------*/
+body {
+    font-size: 16px;
+    padding: 15px;
+    
+}
+.topbody {
+    padding-top: 50px;
+}
+
+.clear {
+    clear: both;
+    margin-top:15px;
+}
+
+h2 {
+    background-color: rgba(82, 150, 185, 1.0);
+    padding:5px;
+    color:white;
+    text-align:center;
+}
+
+.hours {
+    border: 0;
+    color: #f6931f;
+    font-weight: bold;
+    margin-bottom:5px;
+}
+
+#error {
+    color: Red;
+}
+
+#free {
+    width: 80px;
+    font-size: 40px;
+    background-color: #d14836;
+    color: white;
+    padding: 5px;
+    display: inline-block;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.item {
+    float: left;
+    width: 150px;
+}
+
+.instruction {
+    display: none;
+    background-color: rgba(82, 150, 185, 1.0);
+    color: white;
+    padding: 5px 10px;
+    margin-top:5px;
+}
+
+.research {
+    margin-top: 20px;
+    clear: both;
+    float:right;
+}
+
+.success {
+    background-color: #d14836;
+    padding:5px;
+    color:white;
+
+}
+
+.large {
+    font-size:30px;
+}
+#assumption{
+    clear:both;
+    padding-top:50px;
+}
