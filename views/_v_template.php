@@ -77,10 +77,11 @@
                         <a href='/plans'>Plans</a>
                     </li>
                     <?php endif; ?>
-                    <?php if($user): ?>
                     <li>
                         <a href='/goals'>Goals</a>
                     </li>
+                    <?php if($user): ?>
+                    
                     <?php else: ?>
                     <li>
                         <a href='/users/signup'>Sign Up</a>

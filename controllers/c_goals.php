@@ -10,10 +10,7 @@ class goals_controller extends base_controller {
 		# Make sure the base controller construct gets called
 		parent::__construct();
 		
-		# Only let logged in users access the methods in this controller
-		if(!$this->user) {
-			die("Members only");
-		}
+		
 		
 	} 
 
