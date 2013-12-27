@@ -28,6 +28,12 @@ $('#GoalTableContainer').jtable({
             create: false,
             edit: false
         },
+        goals: {
+            title: 'Goals',
+            width: '50%',
+            create: false,
+            edit: false
+        },
         public: {
             title: 'Public',
             width: "5%",

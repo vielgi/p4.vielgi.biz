@@ -22,12 +22,6 @@ class goals_controller extends base_controller {
 	-------------------------------------------------------------------------------------------------*/
 	public function index() {
         
-        # check if user is admin
-        if (empty($this->user->admin)) {
-            Router::redirect('/');
-            die();
-        }
-
         # using JqGrid lib
         $this->template->jtable = true;
 
@@ -39,12 +33,6 @@ class goals_controller extends base_controller {
 	}
 
     public function get_goals() {
-        # check if user is admin
-        if (empty($this->user->admin)) {
-            Router::redirect('/');
-            die();
-        }
-
         // extract passed parameters from jtable
         $query = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
         parse_str($query, $params);
@@ -85,6 +73,7 @@ class goals_controller extends base_controller {
             $items[] = array(
                 "goal_id"    => $goal["goal_id"],
                 "modified_date"  => Time::display($goal["modified_date"],'Y-m-d H:m:s'),
+                "goals"         =>$goal["goals"],
                 "first_name" => $goal["first_name"],
                 "last_name"  => $goal["last_name"],
                 "public"     => $goal["public"]
