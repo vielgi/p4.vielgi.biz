@@ -120,7 +120,7 @@
 
         <?php if(isset($client_files_body)) echo $client_files_body; ?>
         <footer class="pull-right clear">
-            <p>&copy; The Calculator That Matters | <a target="_blank" href="http://validator.w3.org/check?uri=p4.vielgi.biz&charset=%28detect+automatically%29&doctype=Inline&group=0">
+            <p>&copy; The Calculator That Matters | <a target="_blank" href="http://validator.w3.org/check?uri=p4.vielgi.biz">
                 HTML5 Validation</a></p>
         </footer>
     </div>
