@@ -1,8 +1,13 @@
 p4.vielgi.biz
 =============
+I've incorporated my javascript from p3 within the php framework for a fun 
+application that calculates free time based on averages that the user inputs via the sliders from jquery ui framework. Then the user selects a plan, and can finally save that as a goal that can be saved and then also shown public.
 
-p4.vielgi.biz
-=============
+From this point on the focus is on the admin side of things. The admin user (testing
+live application at p4.vielgi.biz can be done with admin@vielgi.biz/123123) can
+create/edit/delete plans, users, log items, etc. Here's a more detailed list of functionalities:
+
+
 Jtable Functionalities (sorting/paging) on following pages
 
 	1. Plans -- only for logged-in admins
