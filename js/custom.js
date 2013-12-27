@@ -232,7 +232,7 @@ function saveData() {
         $("#saveGoal-result").html('You have successfully saved your goal!').show();
         // console.log('saved');
     } else {
-        setTimeout('delayerRedirect()', 2000);
+        setTimeout('delayerRedirect()', 500);
         // console.log('session');
     }
         
