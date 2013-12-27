@@ -66,8 +66,12 @@
     <span class="instruction" style="display: inline-block;">Would you like to see what you can do with your Free Time?</span><br>
     <ul id="items">
         <?php foreach ($plans as $plan) : ?>
+         
+            <?php $checked = isset($formData) && in_array($plan['plan_id'], $formData['items']) ? 'checked' : ''; ?>
+            
             <li>
-                <input data-id="<?= $plan['plan_id'] ?>" type="checkbox" class="citems" value="<?= $plan['time'] ?>" /><span><?= ' '. $plan['description'] . '  :  ' . $plan['time'] . '   ' .'hours'?></span>
+                <input type="checkbox" class="citems" value="<?= $plan['plan_id'] ?>"  <?= $checked ?> />
+                <span><?= $plan['description'] . ' : ' . $plan['time'] . 'hours'?></span>
             </li>
         <?php endforeach; ?>
     </ul>
@@ -82,7 +86,11 @@
 
     <script type="text/javascript">
         var logged = false;
-        <?= isset($user) ? 'logged = true' : ''; ?>
+        <?= isset($user) && $user ? 'logged = true' : ''; ?>
+    </script>
+
+    <script type="text/javascript">
+      
     </script>
 
     <span id="saveGoal-result" class="success large"></span>

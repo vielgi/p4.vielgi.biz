@@ -19,7 +19,7 @@ class index_controller extends base_controller {
 
 		# Now set the <title> tag
 		$this->template->title = "The Most Important Personal Calculator";
-
+		
 		# check if we have saved form's data for new user
 		if($this->user && !empty($_SESSION['sessionData'])) {
 			$this->template->content->formData = unserialize($_SESSION['sessionData']);

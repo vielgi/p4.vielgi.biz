@@ -7,7 +7,7 @@ $('#PeopleTableContainer').jtable({
 
 
     actions: {
-        listAction:   '/plans/get_plans/',
+        listAction:   '/plans/get_plans',
         createAction: '/plans/create_plan/',
         updateAction: '/plans/update_plan/',
         deleteAction: '/plans/delete_plan/'

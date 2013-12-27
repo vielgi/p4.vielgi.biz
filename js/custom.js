@@ -228,18 +228,20 @@ function saveData() {
         goals: $("#items-checkpoints").html()
     });
 
-    // if(logged)
-    //     setTimeout('delayerRedirect()', 2000);
-    // else
-    //     $("#saveGoal-result").html('You have successfully saved your goal!').show();
+    if(logged) {
+        $("#saveGoal-result").html('You have successfully saved your goal!').show();
+        // console.log('saved');
+    } else {
+        setTimeout('delayerRedirect()', 2000);
+        // console.log('session');
+    }
+        
 }
 
 $(function () {
-
     $("#saveGoal").click(function(e){
         e.preventDefault();
         saveData();
-        console.log('saved');
     });
 
 });

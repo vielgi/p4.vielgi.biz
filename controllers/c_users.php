@@ -168,33 +168,23 @@ class users_controller extends base_controller {
 		# Set up the query to see if there's a matching email/password in the DB
 		$q =
             "
-            SELECT token, user_id
+            SELECT token
 			FROM users
 			WHERE email = '".$data['email']."'
 			AND password = '".$data['password']."'
-            and deleted<>1
+            
             ";
 
 		
 		# If there was, this will return the token
 		$result = DB::instance(DB_NAME)->select_row($q);
         $token = $result['token'];
-
+   
 		# Success
 		if($token) {
 
 			# Don't echo anything to the page before setting this cookie!
 			setcookie('token',$token, strtotime('+1 year'), '/');
-
-            $data3 = Array (
-
-                "modified_date"  => Time::now(),
-                "FK_id"          => $result['user_id'],
-                "FK_table"       => 'users',
-                "login"          => 1,
-                "modified_by"    => $result['user_id']
-            );
-            DB::instance(DB_NAME)->insert('logs',$data3);
 
             # Send them to the homepage
 			Router::redirect('/');
