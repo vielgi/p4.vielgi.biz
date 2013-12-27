@@ -16,80 +16,194 @@ class plans_controller extends base_controller {
 		}
 		
 	} 
-		 
-	/*-------------------------------------------------------------------------------------------------
-	Display a new plan form for editing by admins only and the logged-in users' own plans
-	-------------------------------------------------------------------------------------------------*/
-	public function add() {
-		
-		$this->template->content = View::instance("v_posts_add");
-		$client_files_body = Array (
-				'/js/form-ajax.js',
-				'/js/add_post.js'
-		);
 
-		$this->template->client_files_body = Utils::load_client_files($client_files_body);
-
-		echo $this->template;
-		
-	}	
-		
-	/*-------------------------------------------------------------------------------------------------
-	Create a new plan -- only for logged-in users and admins
-	-------------------------------------------------------------------------------------------------*/
-	public function p_add() {
-		
-		# 1. Create the plan
-		$data = Array (
-				"modified_date"  => Time::now(),
-                "modified_by"    => $user_id,
-                "description"    => $_POST['description'],
-                "public"         => $_POST['public'],
-                "time"           => $_POST['time']
-        );
-
-        $plan_id = DB::instance(DB_NAME)->insert_row('plans',$data);
-
-		# 2. Update plan only for logged-in admins
-		/*$data2 = Array(	
-				"modified_by"    => $user_id,
-				"modified_date"	 => Time::now(),
-                "description"    => $_POST['description'],
-                "public"         => $_POST['public'],
-                "time"           => $_POST['time']
-            DB::instance(DB_NAME)->update('[plans',$_POST, "WHERE plan_id = '".$_POST['plan_id']."'");
-        ); */ 
-        # 3. Insert plan into log
-        $data3 = Array (
-
-                "modified_date"  => Time::now(),
-                "FK_id"          => $plan_id,
-                "FK_table"       => 'plans',
-                "login"          => false,
-                "modified_by"    => $user_id
-        );
-        DB::instance(DB_NAME)->insert('logs',$data3);
-		
-		//Router::redirect('/posts/');
-		$view = new View('');
-	}
-	
 	/*-------------------------------------------------------------------------------------------------
 	View only all plans
 	-------------------------------------------------------------------------------------------------*/
 	public function index() {
+        
+        # check if user is admin
+        if (empty($this->user->admin)) {
+            Router::redirect('/');
+            die();
+        }
+
+        # using JqGrid lib
+        $this->template->jtable = true;
+
+		# Set up view
+		$this->template->content = View::instance('v_plans_index');
+		
+		# Render view
+		echo $this->template;
+	}
+
+    public function get_plans() {
+        # check if user is admin
+        if (empty($this->user->admin)) {
+            Router::redirect('/');
+            die();
+        }
+
+        // extract passed parameters from jtable
+        $query = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+        parse_str($query, $params);
+        
+
+        // count all records query
+        $q = "SELECT COUNT(*) as count
+        FROM plans AS p inner join
+        users as u on p.modified_by=u.user_id
+        inner JOIN contacts AS c ON u.user_id=c.user_id
+        and c.modified_date = (select max(modified_date) from
+          contacts as c where c.user_id=p.modified_by)
+        ";
+         // run query
+        $count = DB::instance(DB_NAME)->select_row($q);
+        $order = isset($params['jtSorting']) ? $params['jtSorting'] : 'plan_id DESC';
+        
+        # Set up query
+        $q = "SELECT
+              p.plan_id, p.description,p.time,p.public, c.first_name, c.last_name, p.modified_date, p.show
+              FROM plans AS p inner join
+              users as u on p.modified_by=u.user_id
+              inner JOIN contacts AS c ON u.user_id=c.user_id
+              and c.modified_date = (select max(modified_date) from
+              contacts as c where c.user_id=p.modified_by)
+              ORDER BY {$order}  
+              LIMIT {$params['jtStartIndex']}, {$params['jtPageSize']}
+            ";
+       
+        # Run query
+        $plans = DB::instance(DB_NAME)->select_rows($q);
+        $items = array();
+        $i = 0;
+        foreach($plans as $plan) {
+            $items[] = array(
+                "plan_id" => $plan["plan_id"],
+                "modified_date" => Time::display($plan['modified_date'],'Y-m-d H:m:s'),
+                "first_name" => $plan["first_name"],
+                "last_name" => $plan["last_name"],
+                "public" => $plan["public"],
+                "show" => $plan["show"],
+                "description" => $plan["description"],
+                "time" => $plan["time"]
+            );
+        }
+
+        //Return result to jTable
+        $jTableResult = array();
+        $jTableResult['Result'] = "OK";
+        $jTableResult['TotalRecordCount'] = $count['count'];
+        $jTableResult['Records'] = $items;
+        print json_encode($jTableResult);
+    }
+
+    public function update_plan() {
+        # check if user is admin
+        if (empty($this->user->admin)) {
+            Router::redirect('/');
+            die();
+        }
+
+        # Set up query
+        $q = "UPDATE plans SET
+			  description='".$_POST['description']."', time='".$_POST['time']."', public='".(!empty($_POST['public'])?1:0)."'
+			  WHERE plan_id=".$_POST['plan_id'];
+        $plans = DB::instance(DB_NAME)->query($q);
+		
+		#Adding action to System Log
+        $data3 = Array (
+
+                "modified_date"  => Time::now(),
+                "FK_id"          => $_POST['plan_id'],
+                "FK_table"       => 'plans',
+                "login"          => false,
+                "modified_by"    => $this->user->user_id
+        );
+        DB::instance(DB_NAME)->insert('logs',$data3);
+
+        //Return result to jTable
+        $jTableResult = array();
+        $jTableResult['Result'] = "OK";
+        print json_encode($jTableResult);
+    }
+
+    public function create_plan() {
+        # check if user is admin
+        if (empty($this->user->admin)) {
+            Router::redirect('/');
+            die();
+        }
+
+        # Set up query
+        $q = "INSERT INTO plans SET
+			  description='".$_POST['description']."', time='".$_POST['time']."', public='".(!empty($_POST['public'])?1:0)."',
+			  modified_date='".Time::now()."', modified_by='".$this->user->user_id."'";
+        $plans = DB::instance(DB_NAME)->query($q);
+
+        # Set up query
+        $q = "SELECT
+			  p.plan_id, p.description,p.time,p.public, c.first_name, c.last_name, p.modified_date, p.show
+			  FROM plans AS p inner join
+			  users as u on p.modified_by=u.user_id
+    		  inner JOIN contacts AS c ON u.user_id=c.user_id
+			  and c.modified_date = (select max(modified_date) from
+			  contacts as c where c.user_id=p.modified_by) and p.plan_id = LAST_INSERT_ID()
+            ";
+
+        # Run query
+        $result = DB::instance(DB_NAME)->select_row($q);
+        $result["posted_on"] = Time::display($result['modified_date'],'Y-m-d H:m:s');
+
+        #Adding action to System Log
+        $data3 = Array (
+
+                "modified_date"  => Time::now(),
+                "FK_id"          => $result["plan_id"],
+                "FK_table"       => 'plans',
+                "login"          => false,
+                "modified_by"    => $this->user->user_id
+        );
+        DB::instance(DB_NAME)->insert('logs',$data3);
+
+        //Return result to jTable
+        $jTableResult = array();
+        $jTableResult['Result'] = "OK";
+        $jTableResult['Record'] = $result;
+        print json_encode($jTableResult);
+    }
+
+    public function delete_plan() {
+        # check if user is admin
+        if (empty($this->user->admin)) {
+            Router::redirect('/');
+            die();
+        }
+
+        # Set up query
+        $q = "DELETE FROM plans
+			  WHERE plan_id=".$_POST['plan_id'];
+        $plans = DB::instance(DB_NAME)->query($q);
+
+        //Return result to jTable
+        $jTableResult = array();
+        $jTableResult['Result'] = "OK";
+        print json_encode($jTableResult);
+    }
+
+	public function load_five() {
 
 		# Set up view
 		$this->template->content = View::instance('v_plans_index');
 		
 		# Set up query
-		$q = "SELECT 
-			  p.description,p.time,p.public, c.first_name, c.last_name, p.modified_date
-			  FROM plans AS p inner join
-			  users as u on p.modified_by=u.user_id
-    		  inner JOIN contacts AS c ON u.user_id=c.user_id 
-			  and c.modified_date = (select max(modified_date) from
-			  contacts as c where c.user_id=p.modified_by)
+		$q = "
+				SELECT * FROM plans 
+                WHERE public = 1 
+                AND show = 1
+ 				ORDER BY MODIFIED_DATE DESC
+				LIMIT 5
             ";
 		
 		# Run query	
@@ -100,113 +214,6 @@ class plans_controller extends base_controller {
 		
 		# Render view
 		echo $this->template;
-		
-	}
-    
-    /*-------------------------------------------------------------------------------------------------
-	View and update plans that logged-in user has created
-	-------------------------------------------------------------------------------------------------*/
-	public function mine() {
-		
-        
-		# Set up view
-		$this->template->content = View::instance('v_plans_mine');
-        
-        
-        $successMsg = null;
-        if (isset($_POST['btn']) && $_POST['btn'] == 'Update') {
-            
-            $_POST['modified_date'] = Time::now();
-            /*$_POST['description'] = trim($_POST['description'] );
-            */$_POST['time'] = trim($_POST['time'] );
-            $_POST['modified_by'] = $user_id;
-            unset($_POST['btn']);
-            DB::instance(DB_NAME)->update('plans',$_POST, "WHERE plan_id = '".$_POST['plan_id']."'");
-            
-            
-            $successMsg = 'Successfully Updated Plan!';
-        } 
-        else if (isset($_POST['btn']) && $_POST['btn'] == 'Delete') {
-            
-            DB::instance(DB_NAME)->delete('posts', "WHERE plan_id = '".$_POST['plan_id']."'");
-            
-            $successMsg = 'Successfully Deleted Plan!';
-        }
-        
-        $this->template->content->successMsg = $successMsg;
-       
-		
-		# Set up query
-		$q = 'SELECT 
-			  p.description,p.time,p.public, c.first_name, c.last_name, p.modified_date
-			  FROM plans AS p inner join
-			  users as u on p.modified_by=u.user_id
-    		  inner JOIN contacts AS c ON u.user_id=c.user_id 
-			  and c.modified_date = (select max(modified_date) from
-			  contacts as c where c.user_id=p.modified_by)
-    		  and p.modified_by = '.$this->user->user_id;
-		
-		# Run query	
-		$plans = DB::instance(DB_NAME)->select_rows($q);
-		
-		# Pass $plans array to the view
-		$this->template->content->plans = $plans;
-		
-		# Render view
-		echo $this->template;
 	}
 
-	/*-------------------------------------------------------------------------------------------------
-	View and update plans that logged-in user has created
-	-------------------------------------------------------------------------------------------------*/
-	public function admin_view() {
-		
-        
-		# Set up view
-		$this->template->content = View::instance('v_plans_mine');
-        
-        
-        $successMsg = null;
-        if (isset($_POST['btn']) && $_POST['btn'] == 'Update') {
-            
-            $_POST['modified'] = Time::now();
-            $_POST['content'] = trim($_POST['content'] );
-            unset($_POST['btn']);
-            DB::instance(DB_NAME)->update('posts',$_POST, "WHERE post_id = '".$_POST['post_id']."'");
-            
-            
-            $successMsg = 'Successfully Updated Post!';
-        } 
-        else if (isset($_POST['btn']) && $_POST['btn'] == 'Delete') {
-            
-            DB::instance(DB_NAME)->delete('posts', "WHERE post_id = '".$_POST['post_id']."'");
-            
-            $successMsg = 'Successfully Deleted Post!';
-        }
-        
-        $this->template->content->successMsg = $successMsg;
-       
-		
-		# Set up query
-		$q = 'SELECT 
-                posts.post_id,
-			    posts.content,
-			    posts.created,
-                posts.modified,
-			    posts.user_id
-			FROM posts
-			INNER JOIN users 
-			    ON posts.user_id = users.user_id
-			WHERE posts.user_id = '.$this->user->user_id;
-		
-		# Run query	
-		$posts = DB::instance(DB_NAME)->select_rows($q);
-		
-		# Pass $posts array to the view
-		$this->template->content->posts = $posts;
-		
-		# Render view
-		echo $this->template;
-	}
-	
 } # eoc

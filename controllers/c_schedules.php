@@ -46,11 +46,11 @@ class schedules_controller extends base_controller {
     }
 
 	public function p_add() {
-
+	
 		# 1. Create the schedule
 		$data = Array (
 				"modified_date"  => Time::now(),
-                "modified_by"    => $user_id,
+                "modified_by"    => $this->user->user_id,
                 "work"           => $_POST['work'],
                 "sleep"          => $_POST['sleep'],
                 "leisure"        => $_POST['leisure'],
@@ -65,10 +65,10 @@ class schedules_controller extends base_controller {
 		# 2. Create the goal
 		$data2 = Array (
 				"modified_date"  => Time::now(),
-                "modified_by"    => $user_id,
+                "modified_by"    => $this->user->user_id,
                 "schedule_id"    => $schedule_id,
                 "public"         => 1, 
-                "goals"			 => $_POST['items-checkpoints']
+                "goals"			 => $_POST['goals']
         );
 
         $goal_id = DB::instance(DB_NAME)->insert_row('goals',$data2);

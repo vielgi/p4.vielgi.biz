@@ -17,7 +17,7 @@ class base_controller {
 			
 		# Authenticate / load user
 			$this->user = $this->userObj->authenticate();					
-						
+
 		# Set up templates
 			$this->template 	  = View::instance('_v_template');
 			$this->email_template = View::instance('_v_email');			
@@ -25,12 +25,6 @@ class base_controller {
 		# So we can use $user in views			
 			$this->template->set_global('user', $this->user);
 			$this->email_template->set_global('user', $this->user);
-
-		if (!empty($_SESSION['admin'])) {
-			$this->template->set_global('admin', 1);
-		} else {
-			$this->template->set_global('admin', 0);
-		}
 
 	}
 	

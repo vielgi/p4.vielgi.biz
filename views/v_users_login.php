@@ -3,6 +3,11 @@
     <?php echo $successMsg; ?>
 </h3>
 <?php endif; ?>
+<?php if (@$errorMsg) : ?>
+<h3 class="alert alert-danger">
+    <div>Login failed! <a href="/users/login">Try again?</a> OR <a href="/users/signup">REGISTER HERE</a>.</div>
+</h3>
+<?php endif; ?>
 
 <form method='POST' action="/users/p_login" class="form-signin">
     <h2 class="form-signin-heading">Login:</h2>

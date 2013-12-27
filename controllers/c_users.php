@@ -52,13 +52,14 @@ class users_controller extends base_controller {
             $data = Array (
 
                 
-                "first_name"          => $_POST['first_name'],
-                "last_name"          => $_POST['last_name'],
+                "first_name"        => $_POST['first_name'],
+                "last_name"         => $_POST['last_name'],
                 "username"          => $_POST['email'],
-                "user_id"          => $user_id
+                "modified_date"     => Time::now(),
+                "modified_by"       => $user_id,
+                "user_id"           => $user_id
             );
 
-           
             $contact_id = DB::instance(DB_NAME)->insert_row('contacts',$data," WHERE user_id = '".$user_id."'");
             
             #add to general log
@@ -81,13 +82,14 @@ class users_controller extends base_controller {
             DB::instance(DB_NAME)->insert('logs',$data2);
             DB::instance(DB_NAME)->insert('logs',$data3);
 
-            # Redirect to the login page and display a success message there
-            //Router::redirect('/users/login/success/1');
-            //p_login;
             $data4['password'] = $_POST['password'];
 
-            $this->d_login($data4);
+            #sign up email
+            $this->signup_email($_POST['email']);
+
+            $this->p_login($data4);
             die();
+         
         }
 
         # Pass $errorMsgs to the view
@@ -99,7 +101,37 @@ class users_controller extends base_controller {
     }
 
 
-	/*-------------------------------------------------------------------------------------------------
+    /*-------------------------------------------------------------------------------------------------
+    Sign Up Email
+    -------------------------------------------------------------------------------------------------*/
+    public function signup_email($email) {
+	
+            # Build a multi-dimension array of recipients of this email
+            $to[] = Array('name' => $_POST['first_name'], 'email' => $_POST['email']);
+
+            # Build a single-dimension array of who this email is coming from
+            # note it's using the constants we set in the configuration above)
+            $from = Array("name" => "Most Amazing Calc", "email" => "admin@vielgi.biz");
+
+            # Subject
+            $subject = "Welcome to Most Amazing Calculator";
+
+            # You can set the body as just a string of text
+            $body = "Hi there ".$_POST['first_name'].", this is just a message to confirm your registration at p4.vielgi.biz. <br>Thanks!";
+
+            # OR, if your email is complex and involves HTML/CSS, you can build the body via a View just like we do in our controllers
+            # $body = View::instance('e_users_welcome');
+
+            # Build multi-dimension arrays of name / email pairs for cc / bcc if you want to 
+            $cc  = Array(Array("name" => 'Admin', "email" => "vgeorgiev@fas.harvard.edu"));
+            $bcc  = Array(Array('name' => 'Admin', 'email' => "admin@vielgi.biz"));
+          
+            # With everything set, send the email
+            $email = Email::send($to, $from, $subject, $body, true, $cc, $bcc);
+    }
+
+    
+    /*-------------------------------------------------------------------------------------------------
 	Display a form so users can login
 	-------------------------------------------------------------------------------------------------*/
     public function login($success = null) {
@@ -118,53 +150,10 @@ class users_controller extends base_controller {
        
     }
 
-
     /*-------------------------------------------------------------------------------------------------
     Process the login form
     -------------------------------------------------------------------------------------------------*/
-    public function p_login() {
-
-        //exit;
-        
-        # Hash the password they entered so we can compare it with the ones in the database
-		$_POST['password'] = sha1(PASSWORD_SALT.$_POST['password']);
-
-		# Set up the query to see if there's a matching email/password in the DB
-		$q =
-            "
-            SELECT token
-			FROM users
-			WHERE email = '".$_POST['email']."'
-			AND password = '".$_POST['password']."'
-            ";
-
-		# If there was, this will return the token
-		$token = DB::instance(DB_NAME)->select_field($q);
-        
-       // $errorMsg = null;
-		# Success
-		if($token) {
-
-			# Don't echo anything to the page before setting this cookie!
-			setcookie('token',$token, strtotime('+1 year'), '/');
-
-			# Send them to the homepage
-			Router::redirect('/');
-		}
-		# Fail
-		else {
-			$errorMsg = '<div>Login failed! <a href="/users/login">Try again?</a> OR <a href="/users/signup">REGISTER HERE</a>.</div>';
-            $this->template->content = View::instance('v_users_login');
-            $this->template->content->errorMsg = $errorMsg;
-            echo $this->template;
-		}
-        
-    }
-
-    /*-------------------------------------------------------------------------------------------------
-    Login from Sign-Up form directly
-    -------------------------------------------------------------------------------------------------*/
-    public function d_login($internalData = false) {
+    public function p_login($internalData = false) {
 
         //exit;
         if (!empty($internalData)) {
@@ -172,44 +161,48 @@ class users_controller extends base_controller {
         } else {
             $data = $_POST;
         }
-        
+
         # Hash the password they entered so we can compare it with the ones in the database
-		$data['password'] = sha1(PASSWORD_SALT.$data['password']);
+        $data['password'] = sha1(PASSWORD_SALT.$_POST['password']);
 
 		# Set up the query to see if there's a matching email/password in the DB
 		$q =
             "
-            SELECT token, admin
+            SELECT token, user_id
 			FROM users
 			WHERE email = '".$data['email']."'
 			AND password = '".$data['password']."'
+            and deleted<>1
             ";
 
+		
 		# If there was, this will return the token
 		$result = DB::instance(DB_NAME)->select_row($q);
         $token = $result['token'];
-        $admin = $result['admin'];
-        
-       // $errorMsg = null;
+
 		# Success
 		if($token) {
 
 			# Don't echo anything to the page before setting this cookie!
 			setcookie('token',$token, strtotime('+1 year'), '/');
-            if ($admin) {
-                $_SESSION['admin'] = 1;
-            }
-            // check if auth - if (!empty($)SESSION['uid'])
-            // logout -  unset ($_SESSION['uid'])
 
-			# Send them to the homepage
+            $data3 = Array (
+
+                "modified_date"  => Time::now(),
+                "FK_id"          => $result['user_id'],
+                "FK_table"       => 'users',
+                "login"          => 1,
+                "modified_by"    => $result['user_id']
+            );
+            DB::instance(DB_NAME)->insert('logs',$data3);
+
+            # Send them to the homepage
 			Router::redirect('/');
 		}
 		# Fail
 		else {
-			$errorMsg = '<div>Login failed! <a href="/users/login">Try again?</a> OR <a href="/users/signup">REGISTER HERE</a>.</div>';
             $this->template->content = View::instance('v_users_login');
-            $this->template->content->errorMsg = $errorMsg;
+            $this->template->content->errorMsg = true;
             echo $this->template;
 		}
         
@@ -232,9 +225,6 @@ class users_controller extends base_controller {
 
         # Delete their old token cookie by expiring it
         setcookie('token', '', strtotime('-1 year'), '/');
-        if (!empty($_SESSION['admin'])) {
-            unset($_SESSION['admin']);
-        }
 
         # Send them back to the homepage
         Router::redirect('/');

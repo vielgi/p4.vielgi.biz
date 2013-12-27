@@ -38,7 +38,7 @@
 <body>
     
 
-    <div class="container topbody">
+    <div class="container">
 
         <?php if(isset($content)) echo $content; ?>
 

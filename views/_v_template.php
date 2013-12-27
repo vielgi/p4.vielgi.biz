@@ -33,6 +33,18 @@
     
     <script src='/js/form-ajax.js'></script>
     <script src='/js/custom.js'></script>
+
+    <?php if(!empty($jtable)): ?>
+
+    <link href="/js/themes/redmond/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css" />
+    <link href="/js/jtable/themes/lightcolor/blue/jtable.css" rel="stylesheet" type="text/css" />
+
+    <script src="/js/jquery-1.6.4.min.js" type="text/javascript"></script>
+    <script src="/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+    <script src="/js/jtable/jquery.jtable.js" type="text/javascript"></script>
+
+    <?php endif; ?>
+
     <!-- Controller Specific JS/CSS -->
     <?php if(isset($client_files_head)) echo $client_files_head; ?>
 </head>
@@ -54,20 +66,20 @@
 
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <?php if($admin): ?>
+                    <?php if($user && $user->admin): ?>
                     <li>
-                        <a href='/users/'>Users</a>
+                        <a href='/userslist'>Users</a>
                     </li>
                     <li>
-                        <a href='/log/'>System Log</a>
+                        <a href='/log'>System Log</a>
+                    </li>
+                    <li>
+                        <a href='/plans'>Plans</a>
                     </li>
                     <?php endif; ?>
                     <?php if($user): ?>
                     <li>
                         <a href='/goals'>Goals</a>
-                    </li>
-                    <li>
-                        <a href='/plans'>Plans</a>
                     </li>
                     <?php else: ?>
                     <li>
@@ -107,7 +119,8 @@
 
         <?php if(isset($client_files_body)) echo $client_files_body; ?>
         <footer class="pull-right clear">
-            <p>&copy; The Calculator That Matters</p>
+            <p>&copy; The Calculator That Matters | <a target="_blank" href="http://validator.w3.org/check?uri=p4.vielgi.biz&charset=%28detect+automatically%29&doctype=Inline&group=0">
+                HTML5 Validation</a></p>
         </footer>
     </div>
 </body>

@@ -2,12 +2,13 @@ $(function () {
 
     InitSliders();
     InitAssumption();
+    InitLog();
     InitItems();    
 
     calculate();
     setTimeout(function () {
         $("#instruction").show()
-    }, 5000);
+    }, 2000);
 });
 
 function InitAssumption() {
@@ -24,6 +25,19 @@ function InitAssumption() {
     });
 }
 
+function InitLog() {
+    $("#showLog").click(function () {
+        $('#log').load("log");
+        $(this).hide();
+        $("#hideLog").show();
+
+    });
+    $("#hideLog").click(function () {
+        $('#log').html("");
+        $(this).hide();
+        $("#showLog").slideDown();
+    });
+}
 function InitItems() {    
     $('ul#items input[type="checkbox"]').change(function () {
         var freeHours = parseFloat($('#free').text());
@@ -184,3 +198,48 @@ function calculate() {
 
     CalcDates();
 }
+
+
+/* Select & Save Plans
+------------------------------------------------------------------ */
+
+function delayerRedirect(){
+    window.location = "/users/signup";
+}
+function saveData() {
+    var saveUrl = '/schedules/p_add_to_session';
+    if(logged)
+        saveUrl = '/schedules/p_add';
+
+    var citems = $('input:checkbox:checked.citems').map(function () {
+      return this.value;
+  }).get();    
+
+  
+    $.post( saveUrl, {
+        work: $("#work").val(),
+        sleep: $("#sleep").val(),
+        leisure: $("#leisure").val(),
+        care: $("#care").val(),
+        eat: $("#eat").val(),
+        house: $("#house").val(),
+        free: $("#free").val(),
+        items: citems,
+        goals: $("#items-checkpoints").html()
+    });
+
+    // if(logged)
+    //     setTimeout('delayerRedirect()', 2000);
+    // else
+    //     $("#saveGoal-result").html('You have successfully saved your goal!').show();
+}
+
+$(function () {
+
+    $("#saveGoal").click(function(e){
+        e.preventDefault();
+        saveData();
+        console.log('saved');
+    });
+
+});

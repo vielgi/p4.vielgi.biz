@@ -64,16 +64,14 @@
             <input type="text" class="form-control" name="country" value="<?=$user['country']?>" />
         </div>
     </div>
-    <div class="col-sm-4 clear">
+    <div class="form-group col-sm-4 clear">
          <input type="Submit" name="btn" class="btn btn-primary btn-lg btn-block" value="Submit" />
     </div>
-
-
 </form>
-    <div class="form-group clear">
-        <input type="button" id='showAssumption' value='See History of Changes' />
-        <input type="button" id='hideAssumption' value='Hide: History of Changes' style="display: none" />
-        <div id='assumption'>
+    <div class="form-group col-sm-12 clear">
+        <input type="button" id='showLog' value='See History of Changes' />
+        <input type="button" id='hideLog' value='Hide: History of Changes' style="display: none" />
+        <div id='log'>
         </div>
     </div>
 

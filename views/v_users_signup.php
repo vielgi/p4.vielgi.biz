@@ -30,7 +30,7 @@
         <div class="form-group">
             <label class="col-sm-12" for="cpassword">Password</label>
             <div class="col-sm-4">
-                <input type="password" id="cpassword" class="form-control" name="password" placeholder="Enter Password" required/>
+                <input type="password" id="cpassword" class="form-control" minlength="6" name="password" placeholder="Enter Password" required/>
             </div>
         </div>
 

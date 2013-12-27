@@ -8,36 +8,43 @@ class index_controller extends base_controller {
 	public function __construct() {
 		parent::__construct();
 	} 
-		
+
 	/*-------------------------------------------------------------------------------------------------
 	Accessed via http://localhost/index/index/
 	-------------------------------------------------------------------------------------------------*/
 	public function index() {
 		# Any method that loads a view will commonly start with this
 		# First, set the content of the template with a view file
-			$this->template->content = View::instance('v_index_index');
-			
+		$this->template->content = View::instance('v_index_index');
+
 		# Now set the <title> tag
-			$this->template->title = "The Most Important Personal Calculator";
+		$this->template->title = "The Most Important Personal Calculator";
 
-        # check if we have saved form's data for new user
-        if($this->user && !empty($_SESSION['sessionData'])) {
-            $this->template->content->formData = unserialize($_SESSION['sessionData']);
-            unset($_SESSION['sessionData']);
+		# check if we have saved form's data for new user
+		if($this->user && !empty($_SESSION['sessionData'])) {
+			$this->template->content->formData = unserialize($_SESSION['sessionData']);
+			unset($_SESSION['sessionData']);
 
-        }
+		}
 
 		# CSS/JS includes
 			/*
 			$client_files_head = Array("");
-	    	$this->template->client_files_head = Utils::load_client_files($client_files);
-	    	
-	    	$client_files_body = Array("");
-	    	$this->template->client_files_body = Utils::load_client_files($client_files_body);   
-	    	*/
-	      					     		
+			$this->template->client_files_head = Utils::load_client_files($client_files);
+			
+			$client_files_body = Array("");
+			$this->template->client_files_body = Utils::load_client_files($client_files_body);   
+			*/
+
+		// Get plans from DB
+		$q = "SELECT plan_id, description, time FROM `plans` WHERE `public` = 1 AND `show` = 1 LIMIT 5";
+		// Run query
+		$plans = DB::instance(DB_NAME)->select_rows($q);
+		// Pass $plans array to the view
+		$this->template->content->plans = $plans;
+
 		# Render the view
-			echo $this->template;
+		echo $this->template;
 
 	} # End of method
 	
